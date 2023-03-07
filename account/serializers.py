@@ -28,13 +28,23 @@ class CreateUserSerializers(serializers.ModelSerializer):
 
 
 class VerifyEmailSerializer(serializers.ModelSerializer):
-    otp = serializers.IntegerField(validators=otp_validate)
+    otp = serializers.IntegerField(validators=otp_validate, write_only=True)
     email = serializers.EmailField(read_only=True)
 
     class Meta:
         model = User
         fields = ('otp', 'email')
 
+    def validate_otp(self, attr):
+        if attr['otp'] != self.context['request'].user.otp:
+            raise ValidationError('token is wrong')
+        return attr
+
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+        instance.is_active = True
+        instance.save()
+        return instance
 
 
 
