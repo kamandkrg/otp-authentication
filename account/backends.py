@@ -6,10 +6,11 @@ User = get_user_model()
 
 
 class MyBackend(BaseBackend):
-    def authenticate(self, request, email=None, password=None):
+    def authenticate(self, request, username=None, password=None):
         try:
-            user = User.objects.get(Q(email=email))
+            user = User.objects.get(email=username)
             if user and user.check_password(password):
+                print('qqqqqqqqqqqq')
                 return user
         except User.DoesNotExist:
             return None

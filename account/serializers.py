@@ -8,16 +8,16 @@ User = get_user_model()
 
 
 class CreateUserSerializers(serializers.ModelSerializer):
-    password1 = serializers.CharField(label='Password', write_only=True)
+    password = serializers.CharField(label='Password', write_only=True)
 
     class Meta:
         model = User
-        fields = ('email', 'password1')
+        fields = ('email', 'password')
 
     def save(self, **kwargs):
 
         validated_data = {**self.validated_data, **kwargs}
-        password = validated_data.pop('password1')
+        password = validated_data.pop('password')
         user = User.objects.create_user(
             **validated_data
         )
@@ -28,7 +28,7 @@ class CreateUserSerializers(serializers.ModelSerializer):
 
 
 class VerifyEmailSerializer(serializers.ModelSerializer):
-    otp = serializers.IntegerField(validators=otp_validate, write_only=True)
+    otp = serializers.IntegerField(validators=[otp_validate], write_only=True)
     email = serializers.EmailField(read_only=True)
 
     class Meta:
@@ -36,13 +36,14 @@ class VerifyEmailSerializer(serializers.ModelSerializer):
         fields = ('otp', 'email')
 
     def validate_otp(self, attr):
-        if attr['otp'] != self.context['request'].user.otp:
+        user = self.context['request'].user
+        if attr != user.otp:
             raise ValidationError('token is wrong')
         return attr
 
     def save(self, **kwargs):
         instance = super().save(**kwargs)
-        instance.is_active = True
+        instance.verify_email = True
         instance.save()
         return instance
 

@@ -33,7 +33,8 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'phone', 'email', 'first_name', 'last_name', 'age', 'sex', 'national_code', 'job', 'birthday', 'is_active', 'is_seller', 'is_staff', 'is_superuser')
+        fields = ('username', 'phone', 'email', 'first_name', 'last_name', 'is_active',
+                  'is_staff', 'is_superuser', 'verify_email')
 
     def clean_password(self):
         return self.initial['password']

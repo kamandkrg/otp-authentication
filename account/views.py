@@ -1,6 +1,7 @@
+import random
+
 from django.contrib.auth import get_user_model
-from django.shortcuts import render
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,25 +15,23 @@ User = get_user_model()
 class SingUpView(CreateAPIView):
     permission_classes = (AllowAny, )
     serializer_class = CreateUserSerializers
-    queryset = User.bojects.all()
+    queryset = User.objects.all()
 
 
 class VerifyEmailView(APIView):
     permission_classes = (IsAuthenticated, )
-
-    def get_object(self):
-        try:
-            return User.objects.get(self.request.user.pk)
-        except User.DoesNotExist:
-            raise User
+    serializer_class = VerifyEmailSerializer
 
     def get(self, request, *args, **kwargs):
         serializer = VerifyEmailSerializer(request.user)
-        send_email.delay()
+        token = random.randint(1000, 9999)
+        request.user.otp = token
+        request.user.save()
+        send_email.apply_async([request.user.email, token])
         return Response(serializer.data)
 
-    def post(self, request):
-        serializer = VerifyEmailSerializer(request.User, data=request.data)
+    def put(self, request, *args, **kwargs):
+        serializer = VerifyEmailSerializer(request.user, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response('user is active')
