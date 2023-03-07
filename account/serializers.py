@@ -2,22 +2,17 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from lib.validations import otp_validate
+
 User = get_user_model()
 
 
 class CreateUserSerializers(serializers.ModelSerializer):
     password1 = serializers.CharField(label='Password', write_only=True)
-    password2 = serializers.CharField(label='Password confirmation', write_only=True)
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'phone', 'username',
-                  'age', 'sex', 'password1', 'password2')
-
-    def validate(self, attrs):
-        if attrs['password1'] != attrs['password2']:
-            raise ValidationError('password is not mach')
-        return attrs
+        fields = ('email', 'password1')
 
     def save(self, **kwargs):
 
@@ -32,10 +27,13 @@ class CreateUserSerializers(serializers.ModelSerializer):
         return user
 
 
-class VerifyEmail(serializers.ModelSerializer):
+class VerifyEmailSerializer(serializers.ModelSerializer):
+    otp = serializers.IntegerField(validators=otp_validate)
+    email = serializers.EmailField(read_only=True)
+
     class Meta:
         model = User
-        fields = ('otp', )
+        fields = ('otp', 'email')
 
 
 
