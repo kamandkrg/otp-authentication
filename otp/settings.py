@@ -138,6 +138,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = EMAIL_USER
 EMAIL_HOST_PASSWORD = EMAIL_PASSWORD
 
+
+# django rest framework settings
 REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -145,4 +147,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-
+# celery settings
+CELERY_TIMEZONE = "Asia/Tehran"
+CELERY_TASK_TIME_LIMIT = 30 * 60
